@@ -1,0 +1,42 @@
+version: '3.3'
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.5.2
+    volumes:
+      - "es_data:/data/docker/es"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    restart: always
+    environment:
+      ES_JAVA_OPTS: -Xms2g -Xmx2g
+      DISCOVERY_TYPE: singlge-node
+      XPAXK_SECURITY_ENABLED: "false"
+
+  kiabana:
+    image: docker.elastic.co/kibana/kibana:6.5.2
+    links:
+      - elasticsearch
+    ports:
+      - "5601:5601"
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.8
+    restart: always
+    ports:
+      - "16686:16686"
+      - "14267:14267"
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778/tcp"
+    environment:
+      SPAN_STORAGE_TYPE: elasticsearch
+      ES_SERVER_URLS: http://elasticsearch:9200
+      ES_TAGS_AS_FIELDS_ALL: "true"
+    links:
+      - elasticsearch
+
+volumes:
+  es_data: {}
